@@ -54,6 +54,7 @@
       color: #fff;
       text-decoration: none;
       font-weight: bold;
+      white-space: nowrap;
     }
 
     .menu a:hover { background: rgba(255, 255, 255, 0.2); }
@@ -193,6 +194,24 @@
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     }
 
+    /* ===== 3D 바다 배너 ===== */
+    .ocean-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      color: #fff;
+      text-decoration: none;
+      background: linear-gradient(120deg, #0f2a5c, #1b6ca8 55%, #ff9a3c);
+      box-shadow: 0 4px 14px rgba(15, 42, 92, 0.25);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .ocean-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15, 42, 92, 0.35); }
+    .ocean-banner .em { font-size: 2rem; }
+    .ocean-banner b { font-size: 1.1rem; }
+
     /* ===== 이미지 가져오기 ===== */
     .box {
       background: #fff;
@@ -296,8 +315,8 @@
     .credit { margin-top: 12px; font-size: 0.85rem; color: #888; }
     .credit a { color: #16a34a; font-weight: bold; }
 
-    /* ===== 모바일 (768px 이하) ===== */
-    @media (max-width: 768px) {
+    /* ===== 모바일·좁은 화면 (900px 이하) ===== */
+    @media (max-width: 900px) {
       .hamburger { display: flex; }
 
       .menu {
@@ -343,6 +362,7 @@
         <li><a href="#tour">관광지</a></li>
         <li><a href="#study">📚 배열 공부</a></li>
         <li><a href="#images">🖼️ 이미지</a></li>
+        <li><a href="jeju-ocean.html">🌊 3D 바다</a></li>
       </ul>
     </nav>
   </header>
@@ -352,6 +372,10 @@
     <section class="page" id="jeju">
       <h1>🏝️ 일본</h1>
       <p class="desc">반갑습니다. 조연정 · 아름다운 섬 제주도에 오신 것을 환영합니다!</p>
+      <a class="ocean-banner" href="jeju-ocean.html">
+        <span class="em">🌊☀️</span>
+        <span><b>3D 제주 바다와 태양</b><br>출렁이는 바다 위로 해가 뜨고 지며 햇빛이 반짝여요 →</span>
+      </a>
       <div class="cards">
         <div class="card"><div class="icon">🌋</div><h3>한라산</h3><p>해발 1,947m, 남한에서 가장 높은 산</p></div>
         <div class="card"><div class="icon">🌊</div><h3>푸른 바다</h3><p>에메랄드빛 해변이 섬을 둘러싸고 있어요</p></div>
