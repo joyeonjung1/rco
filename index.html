@@ -136,6 +136,63 @@
       font-size: 0.9rem;
     }
 
+    /* ===== 배열 공부 ===== */
+    .study-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .study-btn {
+      font: inherit;
+      text-align: left;
+      background: #fff;
+      border: 2px solid #ffd2a8;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .study-btn:hover { transform: translateY(-2px); border-color: #ff7a00; }
+    .study-btn.active { border-color: #ff7a00; background: #fff4ea; box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.25); }
+    .study-btn .icon { font-size: 2rem; }
+    .study-btn b { display: block; margin: 4px 0 2px; font-size: 1.05rem; }
+    .study-btn span { color: #666; font-size: 0.9rem; }
+
+    .viewer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .viewer-bar h2 { font-size: 1.1rem; }
+    .viewer-bar a { color: #ff7a00; font-weight: bold; text-decoration: none; white-space: nowrap; }
+
+    .viewer-empty {
+      background: #fff;
+      border: 2px dashed #ddd;
+      border-radius: 12px;
+      padding: 48px 16px;
+      text-align: center;
+      color: #999;
+    }
+
+    .viewer-frame {
+      display: block;
+      width: 100%;
+      height: 85vh;
+      min-height: 620px;
+      border: none;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    }
+
     /* ===== 모바일 (768px 이하) ===== */
     @media (max-width: 768px) {
       .hamburger { display: flex; }
@@ -181,6 +238,7 @@
         <li><a href="#food">음식점</a></li>
         <li><a href="#bus">버스</a></li>
         <li><a href="#tour">관광지</a></li>
+        <li><a href="#study">📚 배열 공부</a></li>
       </ul>
     </nav>
   </header>
@@ -240,12 +298,43 @@
         <div class="card"><div class="icon">🏖️</div><h3>협재 해수욕장</h3><p>에메랄드빛 바다와 비양도 풍경</p></div>
       </div>
     </section>
+
+    <!-- 배열 공부 -->
+    <section class="page" id="study">
+      <h1>📚 배열 공부</h1>
+      <p class="desc">버튼을 누르면 자바스크립트 배열과 반복문을 한 줄씩 실행해 보는 애니메이션이 아래에 나타나요.</p>
+
+      <div class="study-buttons">
+        <button class="study-btn" data-src="object-array.html">
+          <div class="icon">🛒</div>
+          <b>장바구니 50개 + 반복문</b>
+          <span>쇼핑 화면과 프로그램 로직을 나란히</span>
+        </button>
+        <button class="study-btn" data-src="cart-array.html">
+          <div class="icon">🍎</div>
+          <b>배열 3개로 장바구니 계산</b>
+          <span>사과·배·귤, 같은 번호(인덱스)로 짝 맞추기</span>
+        </button>
+        <button class="study-btn" data-src="array-step.html">
+          <div class="icon">🧮</div>
+          <b>숫자 배열 1~100 합계</b>
+          <span>for…of로 하나씩 꺼내 더하기</span>
+        </button>
+      </div>
+
+      <div class="viewer-bar" id="viewer-bar" hidden>
+        <h2 id="viewer-title"></h2>
+        <a id="viewer-open" href="#" target="_blank" rel="noopener">↗ 새 창으로 크게 보기</a>
+      </div>
+      <div class="viewer-empty" id="viewer-empty">👆 위 버튼 중 하나를 눌러 보세요</div>
+      <iframe class="viewer-frame" id="viewer-frame" title="배열 공부 애니메이션" hidden></iframe>
+    </section>
   </main>
 
   <footer>© 2026 조연정 · 제주 여행 안내</footer>
 
   <script>
-    const pages = ["jeju", "hotel", "food", "bus", "tour"];
+    const pages = ["jeju", "hotel", "food", "bus", "tour", "study"];
     const menu = document.getElementById("menu");
     const hamburger = document.getElementById("hamburger");
 
@@ -285,6 +374,27 @@
         const id = link.getAttribute("href").slice(1);
         showPage(id);
         try { history.pushState(null, "", "#" + id); } catch (err) {}
+      });
+    });
+
+    // 배열 공부: 버튼을 누르면 해당 애니메이션을 아래에 표시
+    document.querySelectorAll(".study-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const src = btn.dataset.src;
+        const frame = document.getElementById("viewer-frame");
+
+        document.querySelectorAll(".study-btn").forEach(function (b) {
+          b.classList.toggle("active", b === btn);
+        });
+
+        frame.src = src;
+        frame.hidden = false;
+        document.getElementById("viewer-empty").hidden = true;
+        document.getElementById("viewer-bar").hidden = false;
+        document.getElementById("viewer-title").textContent = btn.querySelector("b").textContent;
+        document.getElementById("viewer-open").href = src;
+
+        document.getElementById("viewer-bar").scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
 

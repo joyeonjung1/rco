@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>장바구니 반복문</title>
+  <style>
+    :root {
+      --bg: #f4f2fb;
+      --panel: #ffffff;
+      --text: #1e1b2e;
+      --muted: #6b6785;
+      --line: #e4e0f0;
+      --accent: #7c3aed;
+      --accent-2: #ec4899;
+      --accent-soft: #f3edff;
+      --hi: #f59e0b;
+      --hi-soft: #fff4d6;
+      --good: #10b981;
+      --good-soft: #e7f9f1;
+      --tile: #fbfaff;
+      --code-bg: #1a1530;
+      --code-text: #ece9f7;
+      --code-active: #3a2d63;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0d0b16;
+        --panel: #16131f;
+        --text: #ece9f7;
+        --muted: #a29dbd;
+        --line: #2b2640;
+        --accent: #a78bfa;
+        --accent-2: #f472b6;
+        --accent-soft: #221a3a;
+        --hi-soft: #3a2f10;
+        --good-soft: #0f2a20;
+        --tile: #1c1828;
+        --code-bg: #0f0c1c;
+        --code-active: #33275a;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 18px 16px 30px; }
+    h1 {
+      font-size: 1.45rem;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--hi));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .sub { color: var(--muted); margin-bottom: 14px; font-size: 0.95rem; }
+
+    .main { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .main > * { min-width: 0; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+    }
+    .panel-title .pill {
+      margin-left: auto;
+      font-size: 0.8rem;
+      font-weight: normal;
+      color: var(--muted);
+      font-family: Consolas, monospace;
+    }
+    .side-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: #fff;
+      padding: 1px 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    /* ===== 왼쪽: 쇼핑 화면 ===== */
+    .shelf {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+      gap: 6px;
+      max-height: 330px;
+      overflow-y: auto;
+      padding: 8px 4px 4px;
+      border-radius: 12px;
+      background: var(--accent-soft);
+    }
+    .tile {
+      position: relative;
+      background: var(--tile);
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 2px 4px;
+      text-align: center;
+      transition: transform 0.25s, border-color 0.25s, opacity 0.3s, box-shadow 0.25s;
+      transform: scale(0.6);
+      opacity: 0;
+    }
+    .made .tile { transform: none; opacity: 1; }
+    .tile .idx {
+      position: absolute;
+      top: 1px; left: 4px;
+      font-family: Consolas, monospace;
+      font-size: 0.62rem;
+      color: var(--muted);
+    }
+    .tile .em { font-size: 1.6rem; line-height: 1.1; }
+    .tile .nm { font-size: 0.75rem; font-weight: bold; }
+    .tile .pr { font-size: 0.68rem; color: var(--muted); font-family: Consolas, monospace; }
+    .tile.cur {
+      border-color: var(--hi);
+      box-shadow: 0 0 0 3px var(--hi), 0 0 18px rgba(245, 158, 11, 0.6);
+      transform: scale(1.08);
+      z-index: 2;
+    }
+    .tile.done { opacity: 0.35; }
+    .tile.done::after {
+      content: "✔";
+      position: absolute;
+      top: 2px; right: 5px;
+      color: var(--good);
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    .cart-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+    .cart-icon { font-size: 2.2rem; line-height: 1; }
+    .cart-head .t { font-weight: bold; }
+    .cart-head .c { color: var(--muted); font-size: 0.85rem; }
+    .cart-list {
+      max-height: 210px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    .crow {
+      display: grid;
+      grid-template-columns: 1.6em 1fr auto;
+      gap: 6px;
+      align-items: center;
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.88rem;
+    }
+    .crow:last-child { border-bottom: none; }
+    .crow .no { color: var(--muted); font-family: Consolas, monospace; font-size: 0.75rem; }
+    .crow .calc { color: var(--muted); font-family: Consolas, monospace; font-size: 0.78rem; }
+    .crow .cost { font-weight: bold; font-family: Consolas, monospace; text-align: right; }
+    .crow.new { animation: rowIn 0.5s; background: var(--hi-soft); }
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateX(-16px); }
+      to { opacity: 1; transform: none; }
+    }
+    .cart-empty { color: var(--muted); text-align: center; padding: 16px; font-size: 0.9rem; }
+    .pay {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+    .pay .l { font-size: 0.9rem; opacity: 0.9; }
+    .pay .v { font-size: 1.5rem; font-weight: bold; font-family: Consolas, monospace; }
+    .pay.bump { animation: bump 0.45s; }
+    .pay.win { background: linear-gradient(90deg, #059669, #10b981); box-shadow: 0 0 24px rgba(16, 185, 129, 0.7); }
+
+    /* ===== 오른쪽: 로직 화면 ===== */
+    .code {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 10px;
+      padding: 8px 0;
+      font-family: Consolas, "D2Coding", monospace;
+      font-size: 0.86rem;
+      overflow-x: auto;
+    }
+    .code .ln {
+      display: flex;
+      padding: 0 12px;
+      min-height: 1.55em;
+      border-left: 4px solid transparent;
+      white-space: pre;
+      transition: background 0.2s;
+    }
+    .code .ln .no { width: 2em; color: #6b6785; flex-shrink: 0; user-select: none; }
+    .code .ln.active { background: var(--code-active); border-left-color: var(--hi); }
+    .code .kw { color: #c792ea; }
+    .code .fn { color: #82aaff; }
+    .code .num { color: #f78c6c; }
+    .code .str { color: #c3e88d; }
+    .code .cm { color: #7d7899; font-style: italic; }
+
+    .flow-wrap { display: flex; gap: 8px; margin-top: 12px; align-items: stretch; }
+    .flow { flex: 1; display: flex; flex-direction: column; gap: 0; min-width: 0; }
+    .node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      padding: 6px 10px;
+      background: var(--panel);
+      transition: border-color 0.25s, background 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+    .node .ic { font-size: 1.3rem; }
+    .node .tx { min-width: 0; }
+    .node .tx b { display: block; font-size: 0.9rem; }
+    .node .tx code { font-family: Consolas, monospace; font-size: 0.75rem; color: var(--muted); word-break: break-all; }
+    .node.on {
+      border-color: var(--hi);
+      background: var(--hi-soft);
+      transform: translateX(6px);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.45);
+    }
+    .node.decide { border-style: dashed; }
+    .arrow { text-align: center; color: var(--muted); font-size: 0.8rem; line-height: 1.1; height: 14px; }
+    .flow.fast .node.n1 { animation: flash 0.6s 0s; }
+    .flow.fast .node.n2 { animation: flash 0.6s 0.15s; }
+    .flow.fast .node.n3 { animation: flash 0.6s 0.3s; }
+    @keyframes flash {
+      0%, 100% { background: var(--panel); }
+      40% { background: var(--hi-soft); border-color: var(--hi); }
+    }
+    .loopback {
+      width: 64px;
+      flex-shrink: 0;
+      border: 2px dashed var(--accent);
+      border-left: none;
+      border-radius: 0 16px 16px 0;
+      margin: 18px 0 18px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--accent);
+      font-size: 0.72rem;
+      text-align: center;
+      position: relative;
+    }
+    .loopback .cnt {
+      font-family: Consolas, monospace;
+      font-weight: bold;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .loopback .spin { font-size: 1.3rem; display: inline-block; }
+    .loopback.go .spin { animation: spin 0.6s; }
+    @keyframes spin { to { transform: rotate(-360deg); } }
+
+    .vars { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .var {
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      padding: 6px;
+      text-align: center;
+      min-width: 0;
+    }
+    .var .name { font-family: Consolas, monospace; color: var(--muted); font-size: 0.8rem; }
+    .var .what { font-size: 0.68rem; color: var(--muted); }
+    .var .val { font-family: Consolas, monospace; font-weight: bold; font-size: 1.15rem; word-break: break-all; }
+    .var .val.small { font-size: 0.8rem; }
+    .var .val.empty { color: var(--muted); font-weight: normal; font-size: 0.85rem; }
+    .var.changed { border-color: var(--hi); animation: bump 0.4s; }
+    @keyframes bump {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .explain {
+      margin-top: 12px;
+      background: var(--accent-soft);
+      border-radius: 12px;
+      padding: 10px 14px;
+      min-height: 112px;
+    }
+    .explain .calc {
+      font-family: Consolas, monospace;
+      font-weight: bold;
+      color: var(--accent);
+      font-size: 1rem;
+      margin-bottom: 4px;
+      word-break: break-all;
+    }
+    .explain code { font-family: Consolas, monospace; background: rgba(124, 58, 237, 0.12); padding: 0 4px; border-radius: 4px; }
+
+    .flying { position: fixed; z-index: 40; pointer-events: none; font-size: 1.5rem; }
+    .confetti { position: fixed; top: -40px; font-size: 1.6rem; z-index: 50; pointer-events: none; }
+
+    /* ===== 컨트롤 ===== */
+    .controls {
+      position: sticky;
+      bottom: 0;
+      margin-top: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+      z-index: 20;
+    }
+    .controls button {
+      font: inherit;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 7px 13px;
+      cursor: pointer;
+    }
+    .controls button:hover:not(:disabled) { border-color: var(--accent); }
+    .controls button:disabled { opacity: 0.4; cursor: default; }
+    .controls button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: bold; }
+    .speed { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.9rem; }
+    .progress { margin-left: auto; color: var(--muted); font-size: 0.88rem; text-align: right; }
+    .progress b { color: var(--text); }
+    .bar { height: 4px; background: var(--line); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+    .bar div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); width: 0; transition: width 0.2s; }
+
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; }
+      .shelf { max-height: 250px; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); }
+      .tile .em { font-size: 1.3rem; }
+      .code { font-size: 0.76rem; }
+      .vars { grid-template-columns: 1fr 1fr; }
+      .vars .var:first-child { grid-column: 1 / -1; }
+      .loopback { width: 54px; }
+      .progress { margin-left: 0; width: 100%; text-align: left; }
+      .controls button { flex: 1 1 auto; padding: 7px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🛒 장바구니로 이해하는 배열 + 반복문</h1>
+    <p class="sub">왼쪽은 <b>쇼핑 화면</b>, 오른쪽은 그 뒤에서 돌아가는 <b>프로그램 로직</b>이에요. 다음 ▶을 누르면 둘이 동시에 움직여요.</p>
+
+    <div class="main">
+      <!-- ===== 왼쪽: 쇼핑 화면 ===== -->
+      <div class="panel">
+        <div class="panel-title"><span class="side-label">화면</span> 🏪 상품 진열대 <span class="pill">배열 cart (상품 <span id="n1"></span>개)</span></div>
+        <div class="shelf" id="shelf"></div>
+
+        <div class="cart-head">
+          <span class="cart-icon" id="cart-icon">🛒</span>
+          <div>
+            <div class="t">내 장바구니</div>
+            <div class="c" id="cart-count">담은 상품 0개</div>
+          </div>
+        </div>
+        <div class="cart-list" id="cart-list"></div>
+        <div class="pay" id="pay"><span class="l">총 결제금액 (sum)</span><span class="v" id="pay-val">-</span></div>
+      </div>
+
+      <!-- ===== 오른쪽: 로직 화면 ===== -->
+      <div class="panel">
+        <div class="panel-title"><span class="side-label">로직</span> 🧠 프로그램은 이렇게 생각해요</div>
+        <div class="code" id="code"></div>
+
+        <div class="flow-wrap">
+          <div class="flow" id="flow">
+            <div class="node n1" id="n-1"><span class="ic">📦</span><span class="tx"><b>① 상품 하나 꺼내기</b><code>item = cart[번호]</code></span></div>
+            <div class="arrow">▼</div>
+            <div class="node n2" id="n-2"><span class="ic">✖️</span><span class="tx"><b>② 가격 × 수량</b><code>cost = item.price * item.amount</code></span></div>
+            <div class="arrow">▼</div>
+            <div class="node n3" id="n-3"><span class="ic">➕</span><span class="tx"><b>③ 합계에 더하기</b><code>sum += cost</code></span></div>
+            <div class="arrow">▼</div>
+            <div class="node n4 decide" id="n-4"><span class="ic">❓</span><span class="tx"><b>④ 남은 상품 있나?</b><code>있으면 ①로 ⤴ / 없으면 끝</code></span></div>
+          </div>
+          <div class="loopback" id="loopback">
+            <span class="spin">🔁</span>
+            <span>반복</span>
+            <span class="cnt" id="loop-cnt">0</span>
+            <span>/ <span id="n2"></span></span>
+          </div>
+        </div>
+
+        <div class="vars">
+          <div class="var" id="v-item"><div class="name">item</div><div class="what">지금 꺼낸 상품</div><div class="val"></div></div>
+          <div class="var" id="v-cost"><div class="name">cost</div><div class="what">가격×수량</div><div class="val"></div></div>
+          <div class="var" id="v-sum"><div class="name">sum</div><div class="what">누적 합계</div><div class="val"></div></div>
+        </div>
+
+        <div class="explain">
+          <div class="calc" id="calc"></div>
+          <div id="explain"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="btn-reset">⟲ 처음</button>
+      <button id="btn-prev">◀ 이전</button>
+      <button id="btn-next" class="primary">다음 ▶</button>
+      <button id="btn-play">⏵ 자동 재생</button>
+      <button id="btn-end">⏭ 끝으로</button>
+      <label class="speed">속도 <input type="range" id="speed" min="1" max="10" value="5"></label>
+      <div class="progress">
+        <div>단계 <b id="step-no">1</b> / <span id="step-total"></span></div>
+        <div class="bar"><div id="bar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = function (id) { return document.getElementById(id); };
+
+    // ===== 1. 데이터: 상품 50개 (이름, 가격, 수량) =====
+    const cart = [
+      { name: "🍎 사과", price: 1200, amount: 5 },
+      { name: "🍐 배", price: 3000, amount: 2 },
+      { name: "🍊 귤", price: 500, amount: 10 },
+      { name: "🍌 바나나", price: 2500, amount: 3 },
+      { name: "🍇 포도", price: 6000, amount: 1 },
+      { name: "🍓 딸기", price: 8000, amount: 2 },
+      { name: "🍉 수박", price: 18000, amount: 1 },
+      { name: "🍑 복숭아", price: 2000, amount: 4 },
+      { name: "🍒 체리", price: 9000, amount: 1 },
+      { name: "🥝 키위", price: 800, amount: 6 },
+      { name: "🍍 파인애플", price: 5000, amount: 1 },
+      { name: "🥭 망고", price: 3500, amount: 2 },
+      { name: "🍋 레몬", price: 900, amount: 3 },
+      { name: "🥥 코코넛", price: 4000, amount: 1 },
+      { name: "🍅 토마토", price: 700, amount: 8 },
+      { name: "🥕 당근", price: 600, amount: 5 },
+      { name: "🥔 감자", price: 500, amount: 6 },
+      { name: "🧅 양파", price: 400, amount: 5 },
+      { name: "🥒 오이", price: 800, amount: 4 },
+      { name: "🌽 옥수수", price: 1500, amount: 3 },
+      { name: "🥦 브로콜리", price: 2000, amount: 2 },
+      { name: "🍆 가지", price: 1000, amount: 3 },
+      { name: "🌶️ 고추", price: 300, amount: 10 },
+      { name: "🥬 배추", price: 3000, amount: 1 },
+      { name: "🍄 버섯", price: 1800, amount: 2 },
+      { name: "🥚 달걀", price: 300, amount: 10 },
+      { name: "🥛 우유", price: 2800, amount: 2 },
+      { name: "🧀 치즈", price: 4500, amount: 1 },
+      { name: "🍞 식빵", price: 3200, amount: 1 },
+      { name: "🥐 크루아상", price: 2500, amount: 2 },
+      { name: "🍚 쌀", price: 25000, amount: 1 },
+      { name: "🍜 라면", price: 900, amount: 5 },
+      { name: "🥟 만두", price: 6000, amount: 1 },
+      { name: "🍗 치킨", price: 18000, amount: 1 },
+      { name: "🥩 소고기", price: 30000, amount: 1 },
+      { name: "🐟 고등어", price: 5000, amount: 2 },
+      { name: "🦐 새우", price: 12000, amount: 1 },
+      { name: "🍣 초밥", price: 15000, amount: 1 },
+      { name: "🍙 삼각김밥", price: 1300, amount: 3 },
+      { name: "🍫 초콜릿", price: 1500, amount: 4 },
+      { name: "🍪 쿠키", price: 2000, amount: 2 },
+      { name: "🍩 도넛", price: 1800, amount: 3 },
+      { name: "🍦 아이스크림", price: 1200, amount: 5 },
+      { name: "🍰 케이크", price: 25000, amount: 1 },
+      { name: "🧃 주스", price: 1500, amount: 4 },
+      { name: "🥤 콜라", price: 1800, amount: 3 },
+      { name: "☕ 커피", price: 3500, amount: 2 },
+      { name: "🍵 녹차", price: 2000, amount: 2 },
+      { name: "💧 생수", price: 600, amount: 6 },
+      { name: "🍯 꿀", price: 12000, amount: 1 },
+    ];
+    const N = cart.length;
+    const SLOW = 3;   // 처음 3개는 천천히, 나머지는 빠르게
+    const won = function (n) { return n.toLocaleString("ko-KR") + "원"; };
+    const emojiOf = function (p) { return p.name.split(" ")[0]; };
+    const nameOf = function (p) { return p.name.split(" ").slice(1).join(" "); };
+
+    // ===== 2. 화면에 보여줄 코드 =====
+    const objLine = function (p) {
+      return '  { name: <span class="str">"' + p.name + '"</span>, price: <span class="num">' + p.price + '</span>, amount: <span class="num">' + p.amount + '</span> },';
+    };
+    const codeLines = [
+      '<span class="kw">const</span> cart = [',
+      objLine(cart[0]),
+      objLine(cart[1]),
+      '  <span class="cm">… 상품 ' + (N - 3) + '개 더 …</span>',
+      objLine(cart[N - 1]),
+      ']',
+      '',
+      '<span class="kw">let</span> sum = <span class="num">0</span>',
+      '',
+      '<span class="kw">for</span> (<span class="kw">const</span> item <span class="kw">of</span> cart) {',
+      '  <span class="kw">const</span> cost = item.price * item.amount',
+      '  sum += cost',
+      '}',
+      '',
+      '<span class="fn">console.log</span>(sum)',
+    ];
+    const L = { data: [1, 2, 3, 4, 5, 6], sum: [8], loop: [10], cost: [11], add: [12], close: [13], log: [15] };
+
+    // ===== 3. 단계별 상태를 미리 만들어 둠 =====
+    const steps = [];
+    const st = {
+      made: false, sum: null, cur: -1, done: -1, item: null, cost: null, gone: false,
+      node: 0, fast: false, loop: 0, fly: -1, party: false, out: null, spin: false,
+    };
+    function snap(lines, calc, explain, changed) {
+      steps.push(Object.assign({}, st, { lines: lines, calc: calc, explain: explain, changed: changed || [] }));
+      st.fly = -1; st.party = false; st.fast = false; st.spin = false;
+    }
+
+    st.made = true;
+    snap(L.data, "cart = [ 상품 " + N + "개 ]",
+      "🏪 진열대에 상품 <b>" + N + "개</b>가 놓였어요. 이 진열대 전체가 <b>배열 cart</b>예요.<br>" +
+      "상품 하나는 <code>{ name, price, amount }</code> 묶음(객체) = 이름, 가격, 수량.<br>" +
+      "상품마다 <b>0번 ~ " + (N - 1) + "번</b> 번호가 붙어요. <code>cart[0]</code>은 " + cart[0].name + ", <code>cart[" + (N - 1) + "]</code>는 " + cart[N - 1].name + "!");
+
+    st.sum = 0;
+    snap(L.sum, "sum = 0",
+      "🧮 계산기 <b>sum</b>을 <b>0원</b>으로 맞춰요. 아직 아무것도 안 담았으니까요.", ["sum"]);
+
+    for (let k = 0; k < N; k++) {
+      const p = cart[k];
+      const cost = p.price * p.amount;
+      const old = st.sum;
+      const left = N - k - 1;
+
+      if (k < SLOW) {
+        // ① 꺼내기
+        st.cur = k; st.item = p; st.cost = null; st.node = 1; st.loop = k + 1; st.spin = true;
+        snap(L.loop, "item = cart[" + k + "] → " + p.name,
+          "🔁 <b>" + (k + 1) + "번째 반복</b>: 진열대 <b>" + k + "번</b> 상품을 꺼내 <b>item</b>에 담아요." +
+          (k === 0 ? "<br>🙋 <b>마트 계산원</b>이 바구니에서 물건을 <b>하나씩</b> 꺼내는 것과 똑같아요. <code>for…of</code>가 0번부터 차례대로 알아서 꺼내 줘요." : ""), ["item"]);
+
+        // ② 곱하기
+        st.cost = cost; st.node = 2;
+        snap(L.cost, "cost = " + p.price + " × " + p.amount + " = " + cost,
+          "<code>item.price</code>(가격 " + won(p.price) + ") × <code>item.amount</code>(수량 " + p.amount + "개) = <b>" + won(cost) + "</b><br>" +
+          "점(.)은 \"~의\"라는 뜻이에요. <code>item.price</code> = \"item<b>의</b> 가격\"", ["cost"]);
+
+        // ③ 더하기
+        st.sum = old + cost; st.done = k; st.node = 3; st.fly = k;
+        snap(L.add, "sum = " + old + " + " + cost + " = " + st.sum,
+          "<code>sum += cost</code> → 지금까지 합계 " + won(old) + "에 " + won(cost) + "을 <b>더해서 쌓아요</b>. 🛒 장바구니에 한 줄 추가!", ["sum"]);
+
+        // ④ 남았나?
+        st.node = 4;
+        snap(L.close, "남은 상품? " + left + "개 → ①로 돌아가기 ⤴",
+          "❓ 진열대에 아직 안 꺼낸 상품이 <b>" + left + "개</b> 남았어요. <code>}</code>를 만나면 다시 <code>for</code> 줄로 올라가 <b>다음 번호</b> 상품을 꺼내요." +
+          (k === SLOW - 1 ? "<br>💡 감이 오죠? <b>①→②→③→④</b> 똑같은 4단계를 " + left + "번 더 반복해요. 지금부터는 <b>빠르게</b> 갑니다 ⏩" : ""));
+      } else {
+        // 빠르게: ①②③을 한 번에
+        st.cur = k; st.item = p; st.cost = cost; st.sum = old + cost; st.done = k;
+        st.node = 0; st.fast = true; st.loop = k + 1; st.fly = k; st.spin = true;
+        let ex = "⏩ <b>" + (k + 1) + "번째</b>: " + p.name + " 꺼내기 → " + won(p.price) + " × " + p.amount + " = " + won(cost) + " → 합계 <b>" + won(st.sum) + "</b>";
+        if (k === SLOW) ex += "<br>코드는 그대로인데 <b>item만 바뀌면서</b> 같은 일을 반복하고 있어요.";
+        if ((k + 1) % 10 === 0 && k < N - 1) ex += "<br>🏃 벌써 " + (k + 1) + "개! 사람이면 지칠 텐데 컴퓨터는 몇만 번도 거뜬해요.";
+        if (k === N - 1) ex += "<br>🏁 마지막 상품이에요!";
+        snap(L.loop.concat(L.cost, L.add), "item = cart[" + k + "] → cost = " + p.price + " × " + p.amount + " = " + cost + " → sum = " + st.sum, ex, ["item", "cost", "sum"]);
+      }
+    }
+
+    st.cur = -1; st.item = null; st.cost = null; st.gone = true; st.node = 4;
+    snap(L.close, "남은 상품? 0개 → 반복 끝!",
+      "❓ 남은 상품이 <b>없어요!</b> " + N + "개를 모두 꺼냈으니 반복문을 빠져나와요.<br><b>item</b>과 <b>cost</b>는 반복문 { } 안에서만 쓰는 변수라 이제 사라져요.", ["item", "cost"]);
+
+    st.node = 0; st.out = st.sum; st.party = true;
+    snap(L.log, "console.log(sum) → " + st.sum,
+      "🎉 <b>총 결제금액 " + won(st.sum) + "!</b><br>" +
+      "✨ 핵심: 코드는 <b>단 4줄</b>(for ~ })인데 상품 " + N + "개를 전부 계산했어요. 상품이 1000개가 돼도 <b>코드는 그대로</b>예요. 이게 배열 + 반복문의 힘!", ["sum"]);
+
+    // ===== 4. 화면 만들기 =====
+    $("n1").textContent = N;
+    $("n2").textContent = N;
+    $("shelf").innerHTML = cart.map(function (p, k) {
+      return '<div class="tile" id="t' + k + '"><span class="idx">[' + k + ']</span>' +
+        '<div class="em">' + emojiOf(p) + '</div><div class="nm">' + nameOf(p) + '</div>' +
+        '<div class="pr">' + p.price.toLocaleString() + '×' + p.amount + '</div></div>';
+    }).join("");
+    $("code").innerHTML = codeLines.map(function (html, n) {
+      return '<div class="ln" data-line="' + (n + 1) + '"><span class="no">' + (n + 1) + '</span><span>' + html + '</span></div>';
+    }).join("");
+    $("step-total").textContent = steps.length;
+
+    const lineEls = document.querySelectorAll(".code .ln");
+    const tileEls = document.querySelectorAll(".tile");
+    let cur = 0;
+
+    function setVar(name, html, changed, small) {
+      const box = $("v-" + name);
+      const val = box.querySelector(".val");
+      val.innerHTML = html;
+      val.className = "val" + (small ? " small" : "");
+      box.classList.remove("changed");
+      if (changed) { void box.offsetWidth; box.classList.add("changed"); }
+    }
+    function emptyVar(name, text) {
+      const val = $("v-" + name).querySelector(".val");
+      val.textContent = text;
+      val.className = "val empty";
+      $("v-" + name).classList.remove("changed");
+    }
+
+    function scrollInside(container, el) {
+      const c = container.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      if (r.top < c.top + 6) container.scrollTop -= (c.top - r.top) + 10;
+      else if (r.bottom > c.bottom - 6) container.scrollTop += (r.bottom - c.bottom) + 10;
+    }
+
+    function fly(k) {
+      const from = tileEls[k].getBoundingClientRect();
+      const to = $("cart-icon").getBoundingClientRect();
+      const count = Math.min(cart[k].amount, steps[cur].fast ? 2 : 5);
+      for (let j = 0; j < count; j++) {
+        const f = document.createElement("span");
+        f.className = "flying";
+        f.textContent = emojiOf(cart[k]);
+        const x0 = from.left + from.width / 2 - 12;
+        const y0 = from.top + from.height / 2 - 12;
+        const x1 = to.left + to.width / 2 - 12;
+        const y1 = to.top + to.height / 2 - 12;
+        f.style.left = x0 + "px";
+        f.style.top = y0 + "px";
+        document.body.appendChild(f);
+        f.animate([
+          { transform: "translate(0,0) scale(1)" },
+          { transform: "translate(" + (x1 - x0) * 0.5 + "px," + (Math.min(y0, y1) - 70 - y0) + "px) scale(1.3)", offset: 0.45 },
+          { transform: "translate(" + (x1 - x0) + "px," + (y1 - y0) + "px) scale(0.5)" },
+        ], { duration: 600, delay: j * 70, easing: "ease-in-out", fill: "forwards" })
+          .onfinish = function () { f.remove(); };
+      }
+      setTimeout(function () {
+        $("cart-icon").animate([{ transform: "scale(1)" }, { transform: "scale(1.3) rotate(-10deg)" }, { transform: "scale(1)" }], { duration: 300 });
+      }, 600 + count * 70);
+    }
+
+    function confetti() {
+      const items = ["🎉", "🛒", "✨", "💜", "🎊", "🍎", "🍊"];
+      for (let n = 0; n < 44; n++) {
+        const c = document.createElement("span");
+        c.className = "confetti";
+        c.textContent = items[n % items.length];
+        c.style.left = Math.random() * 100 + "vw";
+        document.body.appendChild(c);
+        c.animate([
+          { transform: "translateY(0) rotate(0deg)", opacity: 1 },
+          { transform: "translateY(" + (window.innerHeight + 80) + "px) rotate(" + (Math.random() * 720 - 360) + "deg)", opacity: 0.8 },
+        ], { duration: 1800 + Math.random() * 1400, delay: Math.random() * 500, easing: "ease-in" })
+          .onfinish = function () { c.remove(); };
+      }
+    }
+
+    function render(forward) {
+      const s = steps[cur];
+
+      // --- 오른쪽: 코드 ---
+      lineEls.forEach(function (el) {
+        el.classList.toggle("active", s.lines.indexOf(Number(el.dataset.line)) >= 0);
+      });
+
+      // --- 오른쪽: 흐름도 ---
+      for (let n = 1; n <= 4; n++) $("n-" + n).classList.toggle("on", s.node === n);
+      const flow = $("flow");
+      flow.classList.remove("fast");
+      if (forward && s.fast) { void flow.offsetWidth; flow.classList.add("fast"); }
+      $("loop-cnt").textContent = s.loop;
+      const lb = $("loopback");
+      lb.classList.remove("go");
+      if (forward && s.spin) { void lb.offsetWidth; lb.classList.add("go"); }
+
+      // --- 오른쪽: 변수 ---
+      if (s.item) setVar("item", s.item.name + "<br>" + won(s.item.price) + " × " + s.item.amount, s.changed.indexOf("item") >= 0, true);
+      else emptyVar("item", s.gone ? "(사라짐)" : "(아직 없음)");
+      if (s.cost !== null) setVar("cost", s.cost.toLocaleString(), s.changed.indexOf("cost") >= 0);
+      else emptyVar("cost", s.gone ? "(사라짐)" : "(아직 없음)");
+      if (s.sum !== null) setVar("sum", s.sum.toLocaleString(), s.changed.indexOf("sum") >= 0);
+      else emptyVar("sum", "(아직 없음)");
+
+      $("calc").textContent = s.calc;
+      $("explain").innerHTML = s.explain;
+
+      // --- 왼쪽: 진열대 ---
+      $("shelf").classList.toggle("made", s.made);
+      tileEls.forEach(function (el, k) {
+        el.classList.toggle("cur", k === s.cur);
+        el.classList.toggle("done", k <= s.done && k !== s.cur);
+      });
+      if (s.cur >= 0) scrollInside($("shelf"), tileEls[s.cur]);
+
+      // --- 왼쪽: 장바구니 ---
+      let rows = "";
+      for (let k = 0; k <= s.done; k++) {
+        const p = cart[k];
+        const isNew = forward && s.fly === k;
+        rows += '<div class="crow' + (isNew ? ' new' : '') + '"><span class="no">' + (k + 1) + '</span>' +
+          '<span>' + p.name + ' <span class="calc">' + p.price.toLocaleString() + '×' + p.amount + '</span></span>' +
+          '<span class="cost">' + won(p.price * p.amount) + '</span></div>';
+      }
+      $("cart-list").innerHTML = rows || '<div class="cart-empty">장바구니가 비어 있어요 🛒</div>';
+      $("cart-list").scrollTop = $("cart-list").scrollHeight;
+      $("cart-count").textContent = "담은 상품 " + (s.done + 1) + "개 / " + N + "개";
+
+      const pay = $("pay");
+      $("pay-val").textContent = s.sum === null ? "-" : won(s.sum);
+      pay.classList.toggle("win", s.out !== null);
+      if (forward && s.changed.indexOf("sum") >= 0) { pay.classList.remove("bump"); void pay.offsetWidth; pay.classList.add("bump"); }
+
+      if (forward && s.fly >= 0) fly(s.fly);
+      if (forward && s.party) confetti();
+
+      // --- 진행 ---
+      $("step-no").textContent = cur + 1;
+      $("bar").style.width = ((cur + 1) / steps.length * 100) + "%";
+      $("btn-prev").disabled = cur === 0;
+      $("btn-next").disabled = cur === steps.length - 1;
+      $("btn-end").disabled = cur === steps.length - 1;
+    }
+
+    function go(n, forceForward) {
+      const forward = !!forceForward || n === cur + 1;
+      cur = Math.max(0, Math.min(steps.length - 1, n));
+      render(forward);
+      if (cur === steps.length - 1) stop();
+    }
+
+    // ===== 5. 자동 재생 =====
+    let timer = null;
+    function delay() {
+      const base = 2400 - $("speed").value * 220;
+      return steps[cur] && steps[cur].fast ? base * 0.45 : base;   // 빠른 구간은 더 빠르게
+    }
+    function tick() {
+      if (cur >= steps.length - 1) { stop(); return; }
+      go(cur + 1);
+      timer = setTimeout(tick, delay());
+    }
+    function play() {
+      if (cur >= steps.length - 1) go(0);
+      $("btn-play").textContent = "⏸ 멈춤";
+      timer = setTimeout(tick, 200);
+    }
+    function stop() {
+      clearTimeout(timer);
+      timer = null;
+      $("btn-play").textContent = "⏵ 자동 재생";
+    }
+
+    $("btn-next").onclick = function () { stop(); go(cur + 1); };
+    $("btn-prev").onclick = function () { stop(); go(cur - 1); };
+    $("btn-reset").onclick = function () { stop(); go(0); };
+    $("btn-end").onclick = function () { stop(); go(steps.length - 1, true); };
+    $("btn-play").onclick = function () { timer ? stop() : play(); };
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight") { stop(); go(cur + 1); }
+      if (e.key === "ArrowLeft") { stop(); go(cur - 1); }
+      if (e.key === " ") { e.preventDefault(); timer ? stop() : play(); }
+    });
+
+    render(false);
+  </script>
+</body>
+</html>
