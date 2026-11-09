@@ -3,9 +3,295 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>인사</title>
+  <title>제주 여행 안내</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      background: #f5f8fa;
+      color: #222;
+      line-height: 1.6;
+    }
+
+    /* ===== 상단 메뉴 ===== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #ff7a00;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 16px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .menu {
+      list-style: none;
+      display: flex;
+      gap: 4px;
+    }
+
+    .menu a {
+      display: block;
+      padding: 8px 14px;
+      border-radius: 6px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .menu a:hover { background: rgba(255, 255, 255, 0.2); }
+    .menu a.active { background: #fff; color: #ff7a00; }
+
+    /* 햄버거 버튼 (PC에서는 숨김) */
+    .hamburger {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 26px;
+      height: 3px;
+      background: #fff;
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    /* 열렸을 때 X 모양으로 */
+    .hamburger.open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+    /* ===== 페이지 ===== */
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 32px 16px;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.3s; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .page .desc {
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .card .icon { font-size: 2rem; }
+    .card h3 { margin: 8px 0 4px; }
+    .card p { color: #666; font-size: 0.95rem; }
+
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      color: #999;
+      font-size: 0.9rem;
+    }
+
+    /* ===== 모바일 (768px 이하) ===== */
+    @media (max-width: 768px) {
+      .hamburger { display: flex; }
+
+      .menu {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 0;
+        background: #ff7a00;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+
+      .menu.open { max-height: 400px; }
+
+      .menu a {
+        padding: 14px 20px;
+        border-radius: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .page h1 { font-size: 1.6rem; }
+    }
+  </style>
 </head>
 <body>
-  <h1>반갑습니다. 조연정</h1>
+
+  <header>
+    <nav class="nav-inner">
+      <a href="#jeju" class="logo">🍊 제주 여행</a>
+
+      <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="menu" id="menu">
+        <li><a href="#jeju">제주도</a></li>
+        <li><a href="#hotel">호텔</a></li>
+        <li><a href="#food">음식점</a></li>
+        <li><a href="#bus">버스</a></li>
+        <li><a href="#tour">관광지</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 제주도 -->
+    <section class="page" id="jeju">
+      <h1>🏝️ 제주도</h1>
+      <p class="desc">반갑습니다. 조연정 · 아름다운 섬 제주도에 오신 것을 환영합니다!</p>
+      <div class="cards">
+        <div class="card"><div class="icon">🌋</div><h3>한라산</h3><p>해발 1,947m, 남한에서 가장 높은 산</p></div>
+        <div class="card"><div class="icon">🌊</div><h3>푸른 바다</h3><p>에메랄드빛 해변이 섬을 둘러싸고 있어요</p></div>
+        <div class="card"><div class="icon">🍊</div><h3>감귤</h3><p>제주를 대표하는 특산물</p></div>
+      </div>
+    </section>
+
+    <!-- 호텔 -->
+    <section class="page" id="hotel">
+      <h1>🏨 호텔</h1>
+      <p class="desc">편안한 휴식을 위한 숙소를 골라보세요.</p>
+      <div class="cards">
+        <div class="card"><div class="icon">🌅</div><h3>오션뷰 리조트</h3><p>중문 · 바다가 보이는 객실</p></div>
+        <div class="card"><div class="icon">🏙️</div><h3>시티 호텔</h3><p>제주시 · 공항에서 15분</p></div>
+        <div class="card"><div class="icon">🏡</div><h3>감성 펜션</h3><p>애월 · 조용한 해안가 숙소</p></div>
+      </div>
+    </section>
+
+    <!-- 음식점 -->
+    <section class="page" id="food">
+      <h1>🍽️ 음식점</h1>
+      <p class="desc">제주에서 꼭 먹어봐야 할 음식들!</p>
+      <div class="cards">
+        <div class="card"><div class="icon">🥩</div><h3>흑돼지 구이</h3><p>제주 대표 메뉴, 쫄깃한 식감</p></div>
+        <div class="card"><div class="icon">🐟</div><h3>갈치조림</h3><p>매콤달콤한 은갈치 요리</p></div>
+        <div class="card"><div class="icon">🍜</div><h3>고기국수</h3><p>진한 돼지뼈 육수의 국수</p></div>
+      </div>
+    </section>
+
+    <!-- 버스 -->
+    <section class="page" id="bus">
+      <h1>🚌 버스</h1>
+      <p class="desc">대중교통으로 제주를 여행해 보세요.</p>
+      <div class="cards">
+        <div class="card"><div class="icon">✈️</div><h3>공항 리무진</h3><p>제주공항 ↔ 중문·서귀포</p></div>
+        <div class="card"><div class="icon">🔴</div><h3>급행 버스</h3><p>주요 거점을 빠르게 연결</p></div>
+        <div class="card"><div class="icon">🔵</div><h3>간선·지선 버스</h3><p>섬 구석구석을 연결하는 노선</p></div>
+      </div>
+    </section>
+
+    <!-- 관광지 -->
+    <section class="page" id="tour">
+      <h1>📸 관광지</h1>
+      <p class="desc">제주의 대표 명소를 둘러보세요.</p>
+      <div class="cards">
+        <div class="card"><div class="icon">🌄</div><h3>성산일출봉</h3><p>유네스코 세계자연유산, 일출 명소</p></div>
+        <div class="card"><div class="icon">💧</div><h3>천지연 폭포</h3><p>서귀포의 시원한 폭포</p></div>
+        <div class="card"><div class="icon">🏖️</div><h3>협재 해수욕장</h3><p>에메랄드빛 바다와 비양도 풍경</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2026 조연정 · 제주 여행 안내</footer>
+
+  <script>
+    const pages = ["jeju", "hotel", "food", "bus", "tour"];
+    const menu = document.getElementById("menu");
+    const hamburger = document.getElementById("hamburger");
+
+    // id에 맞는 페이지를 보여줌 (id가 없으면 주소의 #값 사용)
+    function showPage(id) {
+      if (typeof id !== "string") id = location.hash.replace("#", "");
+      if (!pages.includes(id)) id = "jeju";
+
+      document.querySelectorAll(".page").forEach(function (page) {
+        page.classList.toggle("active", page.id === id);
+      });
+      document.querySelectorAll(".menu a").forEach(function (link) {
+        link.classList.toggle("active", link.getAttribute("href") === "#" + id);
+      });
+
+      closeMenu();
+      window.scrollTo(0, 0);
+    }
+
+    // 햄버거 메뉴 열고 닫기
+    function closeMenu() {
+      menu.classList.remove("open");
+      hamburger.classList.remove("open");
+      hamburger.setAttribute("aria-expanded", "false");
+    }
+
+    hamburger.addEventListener("click", function () {
+      const isOpen = menu.classList.toggle("open");
+      hamburger.classList.toggle("open", isOpen);
+      hamburger.setAttribute("aria-expanded", isOpen);
+    });
+
+    // 메뉴·로고 클릭 시 페이지 전환 + 주소(#) 갱신
+    document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const id = link.getAttribute("href").slice(1);
+        showPage(id);
+        try { history.pushState(null, "", "#" + id); } catch (err) {}
+      });
+    });
+
+    // 뒤로가기·앞으로가기 대응
+    window.addEventListener("popstate", function () { showPage(); });
+    window.addEventListener("hashchange", function () { showPage(); });
+    showPage();
+  </script>
 </body>
 </html>
